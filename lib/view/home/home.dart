@@ -47,6 +47,8 @@ class HomePageState extends State<HomePage> {
   bool _isLoggedIn = false;
   int _listMode = 0;
 
+  String _userVehicle = '';
+
   final UserConfig _userCfg = UserConfig();
   CollectionReference _queryUser;
   CollectionReference _queryGroup;
@@ -103,6 +105,7 @@ class HomePageState extends State<HomePage> {
     menu.icon = Icons.group_work;
     _menuIndexes.add(menu);
   }
+
 // fungsi untuk menampilkan grup yang telah diikuti
   void _getListGroup() async {
     if (_userId.isNotEmpty) {
@@ -138,6 +141,7 @@ class HomePageState extends State<HomePage> {
       });
     }
   }
+
 // fungsi untuk mendapatkan data nama, user id dan list grup
   void _getUser() async {
     var _userCfg = UserConfig();
@@ -146,6 +150,7 @@ class HomePageState extends State<HomePage> {
       setState(() {
         _userName = _userLogin.name;
         _userId = _userLogin.uid;
+        _userVehicle = _userLogin.status == '' ? 'motor' : _userLogin.status;
       });
 
       _getListGroup();
@@ -155,6 +160,16 @@ class HomePageState extends State<HomePage> {
   void _initAction() {
     _actionList.clear();
     _actionList = [
+      IconButton(
+        icon: ImageIcon(
+          AssetImage(_userVehicle == 'motor' ? kImgBlackBike : kImgBlackCar),
+          size: 34,
+        ),
+        tooltip: 'Kendaraan',
+        onPressed: () {
+          _vehicleChange();
+        },
+      ),
       IconButton(
         icon: Icon(
           Icons.logout,
@@ -514,6 +529,7 @@ class HomePageState extends State<HomePage> {
         break;
     }
   }
+
 //fungsi jika grup di klik
   void _groupClick(int index) {
     var group = _groupIndexes[index];
@@ -529,6 +545,7 @@ class HomePageState extends State<HomePage> {
       //_refreshList(value);
     });
   }
+
 // fungsi logout
   void _logout() {
     googleSignIn.signOut().then((value) {
@@ -541,6 +558,18 @@ class HomePageState extends State<HomePage> {
             builder: (context) => LoginPage(),
           ),
         );
+      });
+    });
+  }
+
+  // fungsi merubah kendaraan
+  void _vehicleChange() {
+    var newStatus = _userVehicle == 'motor' ? 'mobil' : 'motor';
+    _queryUser.doc(_userId).update({
+      'status': newStatus,
+    }).then((_snapshotUser) {
+      setState(() {
+        _userVehicle = newStatus;
       });
     });
   }

@@ -32,3 +32,10 @@ const String kMessage1 = 'Ban saya bocor!';
 const String kMessage2 = 'Saya kehabisan bensin!';
 const String kMessage3 = 'Kendaraan saya mogok!';
 const String kMessage4 = 'Saya kecelakaan!';
+
+const String kImgBlackBike = 'assets/image/black_bike.png';
+const String kImgGreenBike = 'assets/image/green_bike.png';
+const String kImgRedBike = 'assets/image/red_bike.png';
+const String kImgBlackCar = 'assets/image/black_car.png';
+const String kImgGreenCar = 'assets/image/green_car.png';
+const String kImgRedCar = 'assets/image/red_car.png';

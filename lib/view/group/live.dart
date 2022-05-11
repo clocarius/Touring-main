@@ -81,9 +81,12 @@ class LiveGroupPageState extends State<LiveGroupPage> {
   StreamSubscription<Position> _positionStreamSubscription;
   bool positionStreamStarted = false;
 
-  var _iconUser;
-  var _iconMember;
-  var _iconHeader;
+  var _iconUserBike;
+  var _iconMemberBike;
+  var _iconHeaderBike;
+  var _iconUserCar;
+  var _iconMemberCar;
+  var _iconHeaderCar;
 
   @override
   void initState() {
@@ -131,27 +134,51 @@ class LiveGroupPageState extends State<LiveGroupPage> {
 
   //Inisialisasi warna profil pengendara
   void _initIcons() async {
-    _iconUser = await BitmapDescriptor.fromAssetImage(
+    // untuk icon sepeda motor
+    _iconUserBike = await BitmapDescriptor.fromAssetImage(
         ImageConfiguration(
             size: Size(
           48.0,
           48.0,
         )),
-        'assets/image/green_bike.png');
-    _iconMember = await BitmapDescriptor.fromAssetImage(
+        kImgGreenBike);
+    _iconMemberBike = await BitmapDescriptor.fromAssetImage(
         ImageConfiguration(
             size: Size(
           48.0,
           48.0,
         )),
-        'assets/image/black_bike.png');
-    _iconHeader = await BitmapDescriptor.fromAssetImage(
+        kImgBlackBike);
+    _iconHeaderBike = await BitmapDescriptor.fromAssetImage(
         ImageConfiguration(
             size: Size(
           48.0,
           48.0,
         )),
-        'assets/image/red_bike.png');
+        kImgRedBike);
+
+    // untuk icon mobil
+    _iconUserCar = await BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(
+            size: Size(
+          48.0,
+          48.0,
+        )),
+        kImgGreenCar);
+    _iconMemberCar = await BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(
+            size: Size(
+          48.0,
+          48.0,
+        )),
+        kImgBlackCar);
+    _iconHeaderCar = await BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(
+            size: Size(
+          48.0,
+          48.0,
+        )),
+        kImgRedCar);
   }
 
   void _getUser() async {
@@ -518,14 +545,16 @@ class LiveGroupPageState extends State<LiveGroupPage> {
           //menghitung kecepatan aman antar pengendara
           double safeSpeed =
               (1000 * (currSpeed / 1000).ceilToDouble() * vs).ceilToDouble();
-//perhitungan dengan jarak pengendara di depan
+
+          //perhitungan dengan jarak pengendara di depan
           if (i > 0) {
             frontDistance =
                 memberDistances[i - 1].distanceDestination / division;
             currRangeFront =
                 ((currDistance - frontDistance) * division).ceilToDouble();
           }
-// perhitungan dengan jarak pengendara di belakang
+
+          // perhitungan dengan jarak pengendara di belakang
           if (i < (memberCount - 1)) {
             backDistance =
                 memberDistances[i + 1].distanceDestination / division;
@@ -540,7 +569,8 @@ class LiveGroupPageState extends State<LiveGroupPage> {
 
           var distanceMove = Geolocator.distanceBetween(
               lastLatitude, lastLongitude, currentLatitude, currentLongitude);
-// penentuan ikon pengendara kepala rombongan, user, atau anggota lain.
+
+          // penentuan ikon pengendara kepala rombongan, user, atau anggota lain.
           if (distanceMove > 0) {
             /*
             print("index: $i, currRangeFront: $currRangeFront,"
@@ -550,96 +580,45 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                 " member: $memberCount"
             );
             */
-            setState(() {
-              _selectedHeader = memberDistances[0];
 
-              if (currId == _userId) {
-                _selectedUser = member;
-                var userMarker = createMarker(_iconUser, member);
-                _markers[MarkerId(currId)] = userMarker;
-                var memberLatLng = LatLng(memberLat, memberLon);
-                _googleMapController
-                    .moveCamera(CameraUpdate.newLatLng(memberLatLng));
-              } else {
-                var memberMarker = createMarker(_iconMember, member);
-                _markers[MarkerId(currId)] = memberMarker;
-              }
+            _queryUsers.doc(currId).get().then((_snapshotUser) {
+              if (_snapshotUser.exists) {
+                var userMember = UserVO.fromJson(_snapshotUser.data());
+                var status =
+                    userMember.status == '' ? 'motor' : userMember.status;
 
-              if (currId == headerId) {
-                var headerMarker = createMarker(_iconHeader, _selectedHeader);
-                _markers[MarkerId(currId)] = headerMarker;
-              }
+                setState(() {
+                  _selectedHeader = memberDistances[0];
 
-              if ((currSpeed / 1000).ceil() > 0) {
-                //state kepala rombongan
-                if (headerId == _userId) {
-                  if (currRangeBack > safeSpeed) {
-                    print("Kurangi Kecepatan");
-                    print("index: $i, currRangeFront: $currRangeFront,"
-                        " currRangeBack: $currRangeBack,"
-                        " currSpeed: $currSpeed,"
-                        " safeSpeed: $safeSpeed, safeRange: $safeRange"
-                        " member: $memberCount");
-                    var newVoiceText = 'Mohon kurangi kecepatan. '
-                        'Anda melampaui sejauh ${(currRangeBack).toInt()} meter.'
-                        'Kecepatan Anda saat ini ${(currSpeed / 1000).ceil()} Kilometer per Jam';
-                    _speak(newVoiceText);
-                  }
-                  if (currRangeBack > safeRange) {
-                    print("Kurangi Kecepatan");
-                    print("index: $i, currRangeFront: $currRangeFront,"
-                        " currRangeBack: $currRangeBack,"
-                        " currSpeed: $currSpeed,"
-                        " safeSpeed: $safeSpeed, safeRange: $safeRange"
-                        " member: $memberCount");
-                    var newVoiceText = 'Mohon kurangi kecepatan. '
-                        'Anda melampaui sejauh ${(currRangeBack).toInt()} meter.'
-                        'Kecepatan Anda saat ini ${(currSpeed / 1000).ceil()} Kilometer per Jam';
-                    _speak(newVoiceText);
-                  }
-                } else {
-                  //state antar member
                   if (currId == _userId) {
-                    if (i > 0) {
-                      //Peringatan tertinggal
-                      if (currRangeFront > safeRange) {
-                        print("Tambah Kecepatan");
-                        print("index: $i, currRangeFront: $currRangeFront,"
-                            " currRangeBack: $currRangeBack,"
-                            " currSpeed: $currSpeed,"
-                            " safeSpeed: $safeSpeed, safeRange: $safeRange"
-                            " member: $memberCount");
-                        var newVoiceText = 'Mohon tambah kecepatan. '
-                            'Anda tertinggal sejauh ${(currRangeFront).toInt()} meter.'
-                            'Kecepatan Anda saat ini ${(currSpeed / 1000).ceil()} Kilometer per Jam';
-                        _speak(newVoiceText);
-                      }
-                      if (currRangeFront > safeSpeed) {
-                        print("Tambah Kecepatan");
-                        print("index: $i, currRangeFront: $currRangeFront,"
-                            " currRangeBack: $currRangeBack,"
-                            " currSpeed: $currSpeed,"
-                            " safeSpeed: $safeSpeed, safeRange: $safeRange"
-                            " member: $memberCount");
-                        var newVoiceText = 'Mohon tambah kecepatan. '
-                            'Anda tertinggal sejauh ${(currRangeFront).toInt()} meter.'
-                            'Kecepatan Anda saat ini ${(currSpeed / 1000).ceil()} Kilometer per Jam';
-                        _speak(newVoiceText);
-                      }
-                    } else {
-                      //Peringatan kurangi kecepatan
-                      if (currRangeBack > safeRange) {
-                        print("Kurangi Kecepatan");
-                        print("index: $i, currRangeFront: $currRangeFront,"
-                            " currRangeBack: $currRangeBack,"
-                            " currSpeed: $currSpeed,"
-                            " safeSpeed: $safeSpeed, safeRange: $safeRange"
-                            " member: $memberCount");
-                        var newVoiceText = 'Mohon kurangi kecepatan. '
-                            'Anda melampaui sejauh ${(currRangeBack).toInt()} meter.'
-                            'Kecepatan Anda saat ini ${(currSpeed / 1000).ceil()} Kilometer per Jam';
-                        _speak(newVoiceText);
-                      }
+                    _selectedUser = member;
+                    var userMarker = createMarker(
+                      status == 'motor' ? _iconUserBike : _iconUserCar,
+                      member,
+                    );
+                    _markers[MarkerId(currId)] = userMarker;
+                    var memberLatLng = LatLng(memberLat, memberLon);
+                    _googleMapController
+                        .moveCamera(CameraUpdate.newLatLng(memberLatLng));
+                  } else {
+                    var memberMarker = createMarker(
+                      status == 'motor' ? _iconMemberBike : _iconMemberCar,
+                      member,
+                    );
+                    _markers[MarkerId(currId)] = memberMarker;
+                  }
+
+                  if (currId == headerId) {
+                    var headerMarker = createMarker(
+                      status == 'motor' ? _iconHeaderBike : _iconHeaderCar,
+                      _selectedHeader,
+                    );
+                    _markers[MarkerId(currId)] = headerMarker;
+                  }
+
+                  if ((currSpeed / 1000).ceil() > 0) {
+                    //state kepala rombongan
+                    if (headerId == _userId) {
                       if (currRangeBack > safeSpeed) {
                         print("Kurangi Kecepatan");
                         print("index: $i, currRangeFront: $currRangeFront,"
@@ -652,9 +631,78 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                             'Kecepatan Anda saat ini ${(currSpeed / 1000).ceil()} Kilometer per Jam';
                         _speak(newVoiceText);
                       }
+                      if (currRangeBack > safeRange) {
+                        print("Kurangi Kecepatan");
+                        print("index: $i, currRangeFront: $currRangeFront,"
+                            " currRangeBack: $currRangeBack,"
+                            " currSpeed: $currSpeed,"
+                            " safeSpeed: $safeSpeed, safeRange: $safeRange"
+                            " member: $memberCount");
+                        var newVoiceText = 'Mohon kurangi kecepatan. '
+                            'Anda melampaui sejauh ${(currRangeBack).toInt()} meter.'
+                            'Kecepatan Anda saat ini ${(currSpeed / 1000).ceil()} Kilometer per Jam';
+                        _speak(newVoiceText);
+                      }
+                    } else {
+                      //state antar member
+                      if (currId == _userId) {
+                        if (i > 0) {
+                          //Peringatan tertinggal
+                          if (currRangeFront > safeRange) {
+                            print("Tambah Kecepatan");
+                            print("index: $i, currRangeFront: $currRangeFront,"
+                                " currRangeBack: $currRangeBack,"
+                                " currSpeed: $currSpeed,"
+                                " safeSpeed: $safeSpeed, safeRange: $safeRange"
+                                " member: $memberCount");
+                            var newVoiceText = 'Mohon tambah kecepatan. '
+                                'Anda tertinggal sejauh ${(currRangeFront).toInt()} meter.'
+                                'Kecepatan Anda saat ini ${(currSpeed / 1000).ceil()} Kilometer per Jam';
+                            _speak(newVoiceText);
+                          }
+                          if (currRangeFront > safeSpeed) {
+                            print("Tambah Kecepatan");
+                            print("index: $i, currRangeFront: $currRangeFront,"
+                                " currRangeBack: $currRangeBack,"
+                                " currSpeed: $currSpeed,"
+                                " safeSpeed: $safeSpeed, safeRange: $safeRange"
+                                " member: $memberCount");
+                            var newVoiceText = 'Mohon tambah kecepatan. '
+                                'Anda tertinggal sejauh ${(currRangeFront).toInt()} meter.'
+                                'Kecepatan Anda saat ini ${(currSpeed / 1000).ceil()} Kilometer per Jam';
+                            _speak(newVoiceText);
+                          }
+                        } else {
+                          //Peringatan kurangi kecepatan
+                          if (currRangeBack > safeRange) {
+                            print("Kurangi Kecepatan");
+                            print("index: $i, currRangeFront: $currRangeFront,"
+                                " currRangeBack: $currRangeBack,"
+                                " currSpeed: $currSpeed,"
+                                " safeSpeed: $safeSpeed, safeRange: $safeRange"
+                                " member: $memberCount");
+                            var newVoiceText = 'Mohon kurangi kecepatan. '
+                                'Anda melampaui sejauh ${(currRangeBack).toInt()} meter.'
+                                'Kecepatan Anda saat ini ${(currSpeed / 1000).ceil()} Kilometer per Jam';
+                            _speak(newVoiceText);
+                          }
+                          if (currRangeBack > safeSpeed) {
+                            print("Kurangi Kecepatan");
+                            print("index: $i, currRangeFront: $currRangeFront,"
+                                " currRangeBack: $currRangeBack,"
+                                " currSpeed: $currSpeed,"
+                                " safeSpeed: $safeSpeed, safeRange: $safeRange"
+                                " member: $memberCount");
+                            var newVoiceText = 'Mohon kurangi kecepatan. '
+                                'Anda melampaui sejauh ${(currRangeBack).toInt()} meter.'
+                                'Kecepatan Anda saat ini ${(currSpeed / 1000).ceil()} Kilometer per Jam';
+                            _speak(newVoiceText);
+                          }
+                        }
+                      }
                     }
                   }
-                }
+                });
               }
             });
           }

@@ -75,11 +75,13 @@ class LoginPageState extends State<LoginPage> {
 
       if (_snapshotUser.exists) {
         _result = UserVO.fromJson(_snapshotUser.data());
+        _user.status = _result.status;
         if (_result.tid != _user.tid) {
           await _queryUser.doc(_user.uid).set(_user.toJson());
           _result.tid = _user.tid;
         }
       } else {
+        _user.status = 'motor';
         await _queryUser.doc(_user.uid).set(_user.toJson());
         _result = _user;
       }
