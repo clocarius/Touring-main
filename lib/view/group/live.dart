@@ -26,6 +26,7 @@ import 'package:touring/model/vo/user.dart';
 
 class LiveGroupPage extends StatefulWidget {
   final GroupVO group;
+
   LiveGroupPage({Key key, this.group}) : super(key: key);
 
   @override
@@ -35,6 +36,7 @@ class LiveGroupPage extends StatefulWidget {
 class LiveGroupPageState extends State<LiveGroupPage> {
   final GoogleSignIn googleSignIn = GoogleSignIn();
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+
   //LatLng _currLatLng;
   //LatLng _destLatLng;
   //Marker _destMarker;
@@ -70,6 +72,7 @@ class LiveGroupPageState extends State<LiveGroupPage> {
 
   Position _curPosition;
   FlutterTts flutterTts;
+
   /*
   var _currPosition = PositionVO();
   var _lastPosition = PositionVO();
@@ -99,7 +102,7 @@ class LiveGroupPageState extends State<LiveGroupPage> {
     }
 
     try {
-      if (flutterTts != null){
+      if (flutterTts != null) {
         flutterTts.stop();
       }
     } catch (e) {
@@ -109,11 +112,13 @@ class LiveGroupPageState extends State<LiveGroupPage> {
     super.dispose();
   }
 
-  void _initAction(context){
+//fungsi untuk broadcast keadaan darurat
+  void _initAction(context) {
     _actionList.clear();
     _actionList = [
       IconButton(
-        icon: Icon(Icons.warning_outlined,
+        icon: Icon(
+          Icons.warning_outlined,
           color: Colors.red,
         ),
         tooltip: 'Broadcast',
@@ -127,26 +132,45 @@ class LiveGroupPageState extends State<LiveGroupPage> {
   //Inisialisasi warna profil pengendara
   void _initIcons() async {
     _iconUser = await BitmapDescriptor.fromAssetImage(
-        ImageConfiguration(size: Size(48.0, 48.0,)), 'assets/image/green_bike.png');
+        ImageConfiguration(
+            size: Size(
+          48.0,
+          48.0,
+        )),
+        'assets/image/green_bike.png');
     _iconMember = await BitmapDescriptor.fromAssetImage(
-        ImageConfiguration(size: Size(48.0, 48.0,)), 'assets/image/black_bike.png');
+        ImageConfiguration(
+            size: Size(
+          48.0,
+          48.0,
+        )),
+        'assets/image/black_bike.png');
     _iconHeader = await BitmapDescriptor.fromAssetImage(
-        ImageConfiguration(size: Size(48.0, 48.0,)), 'assets/image/red_bike.png');
+        ImageConfiguration(
+            size: Size(
+          48.0,
+          48.0,
+        )),
+        'assets/image/red_bike.png');
   }
 
   void _getUser() async {
     var _userCfg = UserConfig();
     _userLogin = await _userCfg.getUser();
-    if (_userLogin != null){
+    if (_userLogin != null) {
       _userId = _userLogin.uid;
       if (_group != null) {
         _queryUsers = FirebaseFirestore.instance.collection(kUsers);
         _queryLives = FirebaseFirestore.instance.collection(kLives);
         _queryGroups = FirebaseFirestore.instance.collection(kGroups);
 
-        _queryGroups.doc(_group.code).collection(kMembers)
-            .doc(_userId).get().then((value){
-          if (value.exists){
+        _queryGroups
+            .doc(_group.code)
+            .collection(kMembers)
+            .doc(_userId)
+            .get()
+            .then((value) {
+          if (value.exists) {
             _getCurrentPosition();
           }
         });
@@ -154,19 +178,20 @@ class LiveGroupPageState extends State<LiveGroupPage> {
     }
   }
 
+// fungsi realtime refresh position
   void _listenPosition() {
     final positionStream = _geolocatorPlatform.getPositionStream(
       locationSettings: AndroidSettings(
-        intervalDuration: Duration(seconds: kTimeInterval) ,
+        intervalDuration: Duration(seconds: kTimeInterval),
         accuracy: LocationAccuracy.high,
-
       ),
     );
     _positionStreamSubscription = positionStream.handleError((error) {
       _positionStreamSubscription.cancel();
       _positionStreamSubscription = null;
-    }).listen((position){
-      Toast.show("Stream Refresh",
+    }).listen((position) {
+      Toast.show(
+        "Stream Refresh",
         this.context,
         duration: Toast.LENGTH_LONG,
         gravity: Toast.BOTTOM,
@@ -196,8 +221,12 @@ class LiveGroupPageState extends State<LiveGroupPage> {
 
     _listenBroadcast(this.context, position);
 
-    _queryGroups.doc(_group.code).collection(kMembers)
-        .doc(_userId).update(currPosition.toJson()).then((value){
+    _queryGroups
+        .doc(_group.code)
+        .collection(kMembers)
+        .doc(_userId)
+        .update(currPosition.toJson())
+        .then((value) {
       _listenPosition();
     });
   }
@@ -208,7 +237,8 @@ class LiveGroupPageState extends State<LiveGroupPage> {
 
     serviceEnabled = await _geolocatorPlatform.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      Toast.show(kLocationServicesDisabledMessage,
+      Toast.show(
+        kLocationServicesDisabledMessage,
         this.context,
         duration: Toast.LENGTH_LONG,
         gravity: Toast.BOTTOM,
@@ -221,7 +251,8 @@ class LiveGroupPageState extends State<LiveGroupPage> {
     if (permission == LocationPermission.denied) {
       permission = await _geolocatorPlatform.requestPermission();
       if (permission == LocationPermission.denied) {
-        Toast.show(kPermissionDeniedMessage,
+        Toast.show(
+          kPermissionDeniedMessage,
           this.context,
           duration: Toast.LENGTH_LONG,
           gravity: Toast.BOTTOM,
@@ -232,7 +263,8 @@ class LiveGroupPageState extends State<LiveGroupPage> {
     }
 
     if (permission == LocationPermission.deniedForever) {
-      Toast.show(kPermissionDeniedForeverMessage,
+      Toast.show(
+        kPermissionDeniedForeverMessage,
         this.context,
         duration: Toast.LENGTH_LONG,
         gravity: Toast.BOTTOM,
@@ -240,7 +272,8 @@ class LiveGroupPageState extends State<LiveGroupPage> {
       return false;
     }
 
-    Toast.show(kPermissionGrantedMessage,
+    Toast.show(
+      kPermissionGrantedMessage,
       this.context,
       duration: Toast.LENGTH_LONG,
       gravity: Toast.BOTTOM,
@@ -283,12 +316,11 @@ class LiveGroupPageState extends State<LiveGroupPage> {
     ];
     menu.icon = Icons.group_work;
     _menuIndexes.add(menu);
-
   }
 
   Future<void> _initMap(GoogleMapController controller) async {
     _googleMapController = controller;
-    if (_group != null){
+    if (_group != null) {
       var destLatitude = _group.latitude;
       var destLongitude = _group.longitude;
       LatLng destLatLng = LatLng(destLatitude, destLongitude);
@@ -323,8 +355,13 @@ class LiveGroupPageState extends State<LiveGroupPage> {
     currPosition.currentLatitude = currentLatitude;
     currPosition.currentLongitude = currentLongitude;
 
-    _queryLives.doc(_group.code).collection(kMembers)
-        .doc(_userId).collection(kRecords).get().then((records){
+    _queryLives
+        .doc(_group.code)
+        .collection(kMembers)
+        .doc(_userId)
+        .collection(kRecords)
+        .get()
+        .then((records) {
       var size = records.size;
       var num = (size + 1).toString();
       int lastTime = currentTime;
@@ -332,11 +369,11 @@ class LiveGroupPageState extends State<LiveGroupPage> {
       double lastLatitude = currentLatitude;
       double lastLongitude = currentLongitude;
 
-      if (size > 0){
+      if (size > 0) {
         var lastData = records.docs[size - 1].data();
-        if (lastData != null){
+        if (lastData != null) {
           lastPosition = PositionVO.fromJson(lastData);
-          if (lastPosition != null){
+          if (lastPosition != null) {
             lastTime = lastPosition.currentTime;
             lastLatitude = lastPosition.currentLatitude;
             lastLongitude = lastPosition.currentLongitude;
@@ -352,20 +389,18 @@ class LiveGroupPageState extends State<LiveGroupPage> {
       currPosition.lastLongitude = lastLongitude;
 
       var distanceDest = Geolocator.distanceBetween(
-          destLatitude, destLongitude,
-          currentLatitude, currentLongitude);
+          destLatitude, destLongitude, currentLatitude, currentLongitude);
 
       var distanceMove = Geolocator.distanceBetween(
-          lastLatitude, lastLongitude,
-          currentLatitude, currentLongitude);
+          lastLatitude, lastLongitude, currentLatitude, currentLongitude);
 
       double speed = 0.0;
 
       var balanceMilli = (currentTime - lastTime);
-      if (balanceMilli > 0){
+      if (balanceMilli > 0) {
         var balance = balanceMilli / 1000;
-        if (distanceMove > 0){
-          if (balance > 0){
+        if (distanceMove > 0) {
+          if (balance > 0) {
             var time = balance / 3600.0;
             var distanceKM = distanceMove / 1000.0;
             speed = distanceKM / time;
@@ -376,13 +411,20 @@ class LiveGroupPageState extends State<LiveGroupPage> {
       currPosition.distanceDestination = distanceDest;
       currPosition.speed = speed;
 
-      _queryLives.doc(_group.code).collection(kMembers)
-          .doc(_userId).collection(kRecords)
+      _queryLives
+          .doc(_group.code)
+          .collection(kMembers)
+          .doc(_userId)
+          .collection(kRecords)
           .doc(num.padLeft(9, '0'))
-          .set(currPosition.toJson()).then((value){
-
-        _queryGroups.doc(_group.code).collection(kMembers)
-            .doc(_userId).set(currPosition.toJson()).then((value){
+          .set(currPosition.toJson())
+          .then((value) {
+        _queryGroups
+            .doc(_group.code)
+            .collection(kMembers)
+            .doc(_userId)
+            .set(currPosition.toJson())
+            .then((value) {
           _updatePosition();
         });
       });
@@ -390,14 +432,16 @@ class LiveGroupPageState extends State<LiveGroupPage> {
     });
   }
 
-  //Perhitungan perbandingan jarak dan notifikasi dengan member lain
+  //Perhitungan perbandingan jarak dengan member lain
   void _updatePosition() {
     List<MemberVO> memberDistances = [];
     List<MemberVO> memberSpeeds = [];
 
-    _queryGroups.doc(_group.code).collection(kMembers)
-      .get().then((_snapshotGroup) {
-
+    _queryGroups
+        .doc(_group.code)
+        .collection(kMembers)
+        .get()
+        .then((_snapshotGroup) {
       memberDistances.clear();
       memberSpeeds.clear();
 
@@ -426,7 +470,7 @@ class LiveGroupPageState extends State<LiveGroupPage> {
         memberSpeeds.add(member);
 
         _queryUsers.doc(memberId).get().then((_snapshotUser) {
-          if (_snapshotUser.exists){
+          if (_snapshotUser.exists) {
             var userMember = UserVO.fromJson(_snapshotUser.data());
             member.name = userMember.name;
             setState(() {
@@ -434,19 +478,19 @@ class LiveGroupPageState extends State<LiveGroupPage> {
             });
           }
         });
-
       }
       //pengurutan member berdasarkan jarak dan kecepatan nya terhadap lokasi tujuan
-      memberDistances.sort((x, y) => x.distanceDestination.compareTo(y.distanceDestination));
+      memberDistances.sort(
+          (x, y) => x.distanceDestination.compareTo(y.distanceDestination));
       memberSpeeds.sort((x, y) => x.speed.compareTo(y.speed));
 
+      // fungsi perhitungan jarak
       var vd = 0.01;
       var vs = 0.15;
 
       int memberCount = memberDistances.length;
 
-      if (memberCount > 0){
-
+      if (memberCount > 0) {
         var headerId = memberDistances[0].id;
 
         for (var i = 0; i < memberCount; i++) {
@@ -459,21 +503,34 @@ class LiveGroupPageState extends State<LiveGroupPage> {
           double backDistance = 0.0;
           double currRangeFront = 0.0;
           double currRangeBack = 0.0;
-          var division = 1000;
-          double frontDistance = memberDistances[0].distanceDestination / division;
-          double currDistance = memberDistances[i].distanceDestination / division;
+          var division = 1000; // parameter utk merubah ke meter
+          double frontDistance =
+              memberDistances[0].distanceDestination / division;
+          double currDistance =
+              memberDistances[i].distanceDestination / division;
           double currSpeed = (memberDistances[i].speed * 1000).ceilToDouble();
-          double safeRange = (1000 * (currSpeed / 1000).ceilToDouble() * vd * memberCount).ceilToDouble();
-          double safeSpeed = (1000 * (currSpeed / 1000).ceilToDouble() * vs).ceilToDouble();
 
-          if (i > 0){
-            frontDistance = memberDistances[i - 1].distanceDestination / division;
-            currRangeFront = ((currDistance - frontDistance) * division).ceilToDouble();
+          //menghitung jarak aman
+          double safeRange =
+              (1000 * (currSpeed / 1000).ceilToDouble() * vd * memberCount)
+                  .ceilToDouble();
+
+          //menghitung kecepatan aman antar pengendara
+          double safeSpeed =
+              (1000 * (currSpeed / 1000).ceilToDouble() * vs).ceilToDouble();
+//perhitungan dengan jarak pengendara di depan
+          if (i > 0) {
+            frontDistance =
+                memberDistances[i - 1].distanceDestination / division;
+            currRangeFront =
+                ((currDistance - frontDistance) * division).ceilToDouble();
           }
-
-          if (i < (memberCount - 1)){
-            backDistance = memberDistances[i + 1].distanceDestination / division;
-            currRangeBack = ((backDistance - currDistance) * division).ceilToDouble();
+// perhitungan dengan jarak pengendara di belakang
+          if (i < (memberCount - 1)) {
+            backDistance =
+                memberDistances[i + 1].distanceDestination / division;
+            currRangeBack =
+                ((backDistance - currDistance) * division).ceilToDouble();
           }
 
           double lastLatitude = memberDistances[0].lastLatitude;
@@ -482,10 +539,9 @@ class LiveGroupPageState extends State<LiveGroupPage> {
           double currentLongitude = memberDistances[0].currentLongitude;
 
           var distanceMove = Geolocator.distanceBetween(
-              lastLatitude, lastLongitude,
-              currentLatitude, currentLongitude);
-
-          if (distanceMove > 0){
+              lastLatitude, lastLongitude, currentLatitude, currentLongitude);
+// penentuan ikon pengendara kepala rombongan, user, atau anggota lain.
+          if (distanceMove > 0) {
             /*
             print("index: $i, currRangeFront: $currRangeFront,"
                 " currRangeBack: $currRangeBack,"
@@ -497,46 +553,45 @@ class LiveGroupPageState extends State<LiveGroupPage> {
             setState(() {
               _selectedHeader = memberDistances[0];
 
-              if (currId == _userId){
+              if (currId == _userId) {
                 _selectedUser = member;
                 var userMarker = createMarker(_iconUser, member);
                 _markers[MarkerId(currId)] = userMarker;
                 var memberLatLng = LatLng(memberLat, memberLon);
-                _googleMapController.moveCamera(CameraUpdate.newLatLng(memberLatLng));
+                _googleMapController
+                    .moveCamera(CameraUpdate.newLatLng(memberLatLng));
               } else {
                 var memberMarker = createMarker(_iconMember, member);
                 _markers[MarkerId(currId)] = memberMarker;
               }
 
-              if (currId == headerId){
+              if (currId == headerId) {
                 var headerMarker = createMarker(_iconHeader, _selectedHeader);
                 _markers[MarkerId(currId)] = headerMarker;
               }
 
-              if ((currSpeed / 1000).ceil() > 0){
+              if ((currSpeed / 1000).ceil() > 0) {
                 //state kepala rombongan
-                if (headerId == _userId){
-                  if (currRangeBack > safeSpeed){
+                if (headerId == _userId) {
+                  if (currRangeBack > safeSpeed) {
                     print("Kurangi Kecepatan");
                     print("index: $i, currRangeFront: $currRangeFront,"
                         " currRangeBack: $currRangeBack,"
                         " currSpeed: $currSpeed,"
                         " safeSpeed: $safeSpeed, safeRange: $safeRange"
-                        " member: $memberCount"
-                    );
+                        " member: $memberCount");
                     var newVoiceText = 'Mohon kurangi kecepatan. '
                         'Anda melampaui sejauh ${(currRangeBack).toInt()} meter.'
                         'Kecepatan Anda saat ini ${(currSpeed / 1000).ceil()} Kilometer per Jam';
                     _speak(newVoiceText);
                   }
-                  if (currRangeBack > safeRange){
+                  if (currRangeBack > safeRange) {
                     print("Kurangi Kecepatan");
                     print("index: $i, currRangeFront: $currRangeFront,"
                         " currRangeBack: $currRangeBack,"
                         " currSpeed: $currSpeed,"
                         " safeSpeed: $safeSpeed, safeRange: $safeRange"
-                        " member: $memberCount"
-                    );
+                        " member: $memberCount");
                     var newVoiceText = 'Mohon kurangi kecepatan. '
                         'Anda melampaui sejauh ${(currRangeBack).toInt()} meter.'
                         'Kecepatan Anda saat ini ${(currSpeed / 1000).ceil()} Kilometer per Jam';
@@ -553,8 +608,7 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                             " currRangeBack: $currRangeBack,"
                             " currSpeed: $currSpeed,"
                             " safeSpeed: $safeSpeed, safeRange: $safeRange"
-                            " member: $memberCount"
-                        );
+                            " member: $memberCount");
                         var newVoiceText = 'Mohon tambah kecepatan. '
                             'Anda tertinggal sejauh ${(currRangeFront).toInt()} meter.'
                             'Kecepatan Anda saat ini ${(currSpeed / 1000).ceil()} Kilometer per Jam';
@@ -566,8 +620,7 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                             " currRangeBack: $currRangeBack,"
                             " currSpeed: $currSpeed,"
                             " safeSpeed: $safeSpeed, safeRange: $safeRange"
-                            " member: $memberCount"
-                        );
+                            " member: $memberCount");
                         var newVoiceText = 'Mohon tambah kecepatan. '
                             'Anda tertinggal sejauh ${(currRangeFront).toInt()} meter.'
                             'Kecepatan Anda saat ini ${(currSpeed / 1000).ceil()} Kilometer per Jam';
@@ -581,8 +634,7 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                             " currRangeBack: $currRangeBack,"
                             " currSpeed: $currSpeed,"
                             " safeSpeed: $safeSpeed, safeRange: $safeRange"
-                            " member: $memberCount"
-                        );
+                            " member: $memberCount");
                         var newVoiceText = 'Mohon kurangi kecepatan. '
                             'Anda melampaui sejauh ${(currRangeBack).toInt()} meter.'
                             'Kecepatan Anda saat ini ${(currSpeed / 1000).ceil()} Kilometer per Jam';
@@ -594,12 +646,10 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                             " currRangeBack: $currRangeBack,"
                             " currSpeed: $currSpeed,"
                             " safeSpeed: $safeSpeed, safeRange: $safeRange"
-                            " member: $memberCount"
-                        );
+                            " member: $memberCount");
                         var newVoiceText = 'Mohon kurangi kecepatan. '
                             'Anda melampaui sejauh ${(currRangeBack).toInt()} meter.'
-                            'Kecepatan Anda saat ini ${(currSpeed / 1000)
-                            .ceil()} Kilometer per Jam';
+                            'Kecepatan Anda saat ini ${(currSpeed / 1000).ceil()} Kilometer per Jam';
                         _speak(newVoiceText);
                       }
                     }
@@ -610,11 +660,10 @@ class LiveGroupPageState extends State<LiveGroupPage> {
           }
         }
       }
-
     });
   }
 
-  Marker createMarker(icon, MemberVO member){
+  Marker createMarker(icon, MemberVO member) {
     var latLng = LatLng(member.latitude, member.longitude);
 
     return Marker(
@@ -624,14 +673,14 @@ class LiveGroupPageState extends State<LiveGroupPage> {
       infoWindow: InfoWindow(
         title: member.name,
       ),
-      onTap: (){
+      onTap: () {
         setState(() {
           _selectedMember = _members[member.id];
-          if (_selectedUser != null){
+          if (_selectedUser != null) {
             double destUser = _selectedUser.distanceDestination;
             double destMember = _selectedMember.distanceDestination;
             var distance = destMember - destUser;
-            if (distance < 0){
+            if (distance < 0) {
               distance = distance * -1;
             }
             _members[member.id].distanceMember = distance;
@@ -702,24 +751,29 @@ class LiveGroupPageState extends State<LiveGroupPage> {
     });
   }
 
-  void _listenBroadcast(BuildContext context, Position position){
-    _queryLives.doc(_group.code)
+//pengendara lain menerima pesan broadcast(3)
+  void _listenBroadcast(BuildContext context, Position position) {
+    _queryLives
+        .doc(_group.code)
         .collection(kBroadcasts)
         .snapshots()
         .listen((_snapshotBroadcast) {
-      for (var i = 0; i < _snapshotBroadcast.docs.length; i++){
+      for (var i = 0; i < _snapshotBroadcast.docs.length; i++) {
         var element = _snapshotBroadcast.docs[i];
         var id = element.id;
         BroadcastVO broadcast = BroadcastVO.fromJson(element.data());
-        if (broadcast.id != _userId){
-          _queryLives.doc(_group.code)
+        if (broadcast.id != _userId) {
+          _queryLives
+              .doc(_group.code)
               .collection(kBroadcasts)
               .doc(id)
               .collection(kReads)
-              .doc(_userId).get().then((read){
-            if (!read.exists){
-              if (broadcast.message.isNotEmpty){
-                if (!_isSpeak){
+              .doc(_userId)
+              .get()
+              .then((read) {
+            if (!read.exists) {
+              if (broadcast.message.isNotEmpty) {
+                if (!_isSpeak) {
                   _speak(broadcast.message);
                   _showBroadcastAlert(context, id, broadcast, position);
                 }
@@ -731,8 +785,9 @@ class LiveGroupPageState extends State<LiveGroupPage> {
     });
   }
 
-  void _sendBroadcast(context, message){
-    if (_curPosition != null){
+//pesan broadcast dikirim ke pengendara lain (2)
+  void _sendBroadcast(context, message) {
+    if (_curPosition != null) {
       BroadcastVO broadcast = new BroadcastVO();
       broadcast.id = _userLogin.uid;
       broadcast.name = _userLogin.name;
@@ -741,11 +796,13 @@ class LiveGroupPageState extends State<LiveGroupPage> {
       broadcast.message = message;
       broadcast.created = DateTime.now().millisecondsSinceEpoch;
 
-      _queryLives.doc(_group.code)
+      _queryLives
+          .doc(_group.code)
           .collection(kBroadcasts)
           .add(broadcast.toJson())
-          .then((value){
-        Toast.show("Broadcast terkirim",
+          .then((value) {
+        Toast.show(
+          "Broadcast terkirim",
           context,
           duration: Toast.LENGTH_LONG,
           gravity: Toast.BOTTOM,
@@ -754,10 +811,12 @@ class LiveGroupPageState extends State<LiveGroupPage> {
     }
   }
 
+// fungsi membaca broadcast keadaan darurat (1)
   void _showBroadcastDialog(BuildContext context) {
     // set up the list options
     Widget optionOne = SimpleDialogOption(
-      child: Text(kMessage1,
+      child: Text(
+        kMessage1,
         style: TextStyle(
           color: Colors.black87,
           fontSize: 18.0,
@@ -770,7 +829,8 @@ class LiveGroupPageState extends State<LiveGroupPage> {
       },
     );
     Widget optionTwo = SimpleDialogOption(
-      child: Text(kMessage2,
+      child: Text(
+        kMessage2,
         style: TextStyle(
           color: Colors.black87,
           fontSize: 18.0,
@@ -783,7 +843,8 @@ class LiveGroupPageState extends State<LiveGroupPage> {
       },
     );
     Widget optionThree = SimpleDialogOption(
-      child: Text(kMessage3,
+      child: Text(
+        kMessage3,
         style: TextStyle(
           color: Colors.black87,
           fontSize: 18.0,
@@ -796,7 +857,8 @@ class LiveGroupPageState extends State<LiveGroupPage> {
       },
     );
     Widget optionFour = SimpleDialogOption(
-      child: Text(kMessage4,
+      child: Text(
+        kMessage4,
         style: TextStyle(
           color: Colors.black87,
           fontSize: 18.0,
@@ -810,7 +872,8 @@ class LiveGroupPageState extends State<LiveGroupPage> {
     );
     // set up the SimpleDialog
     SimpleDialog dialog = SimpleDialog(
-      title: Text(kMessage0,
+      title: Text(
+        kMessage0,
         style: TextStyle(
           color: Colors.black87,
           fontSize: 18.0,
@@ -838,10 +901,11 @@ class LiveGroupPageState extends State<LiveGroupPage> {
       },
     );
   }
-
-  void _showBroadcastAlert(BuildContext context, String id, BroadcastVO broadcast, Position position) {
-    if (position != null){
-      if (broadcast.message.isNotEmpty){
+// muncul pop up screen informasi keadaan darurat (4)
+  void _showBroadcastAlert(BuildContext context, String id,
+      BroadcastVO broadcast, Position position) {
+    if (position != null) {
+      if (broadcast.message.isNotEmpty) {
         var destLatitude = broadcast.latitude;
         var destLongitude = broadcast.longitude;
         var currentLatitude = position.latitude;
@@ -849,8 +913,7 @@ class LiveGroupPageState extends State<LiveGroupPage> {
         var message = broadcast.message;
 
         var distanceDest = Geolocator.distanceBetween(
-            destLatitude, destLongitude,
-            currentLatitude, currentLongitude);
+            destLatitude, destLongitude, currentLatitude, currentLongitude);
         showDialog(
           context: context,
           builder: (context) {
@@ -862,14 +925,17 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(message,
+                    Text(
+                      message,
                       style: TextStyle(
                         color: Colors.red,
                         fontSize: 20.0,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 10.0,),
+                    SizedBox(
+                      height: 10.0,
+                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -887,7 +953,9 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                                   fontSize: 16.0,
                                 ),
                               ),
-                              SizedBox(height: 5.0,),
+                              SizedBox(
+                                height: 5.0,
+                              ),
                               Text(
                                 'Latitude',
                                 textAlign: TextAlign.left,
@@ -896,7 +964,9 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                                   fontSize: 16.0,
                                 ),
                               ),
-                              SizedBox(height: 5.0,),
+                              SizedBox(
+                                height: 5.0,
+                              ),
                               Text(
                                 'Longitude',
                                 textAlign: TextAlign.left,
@@ -905,7 +975,9 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                                   fontSize: 16.0,
                                 ),
                               ),
-                              SizedBox(height: 5.0,),
+                              SizedBox(
+                                height: 5.0,
+                              ),
                               Text(
                                 'Jarak',
                                 textAlign: TextAlign.left,
@@ -914,11 +986,15 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                                   fontSize: 16.0,
                                 ),
                               ),
-                              SizedBox(height: 5.0,),
+                              SizedBox(
+                                height: 5.0,
+                              ),
                             ],
                           ),
                         ),
-                        SizedBox(width: 10.0,),
+                        SizedBox(
+                          width: 10.0,
+                        ),
                         Expanded(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
@@ -933,7 +1009,9 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(height: 5.0,),
+                              SizedBox(
+                                height: 5.0,
+                              ),
                               Text(
                                 broadcast.latitude.toString(),
                                 textAlign: TextAlign.left,
@@ -942,7 +1020,9 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                                   fontSize: 16.0,
                                 ),
                               ),
-                              SizedBox(height: 5.0,),
+                              SizedBox(
+                                height: 5.0,
+                              ),
                               Text(
                                 broadcast.longitude.toString(),
                                 textAlign: TextAlign.left,
@@ -951,15 +1031,20 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                                   fontSize: 16.0,
                                 ),
                               ),
-                              SizedBox(height: 5.0,),
-                              Text('${distanceDest.ceil().toString()} meter',
+                              SizedBox(
+                                height: 5.0,
+                              ),
+                              Text(
+                                '${distanceDest.ceil().toString()} meter',
                                 textAlign: TextAlign.left,
                                 style: TextStyle(
                                   color: Colors.black87,
                                   fontSize: 16.0,
                                 ),
                               ),
-                              SizedBox(height: 5.0,),
+                              SizedBox(
+                                height: 5.0,
+                              ),
                             ],
                           ),
                         ),
@@ -972,20 +1057,25 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                 MaterialButton(
                   child: Text('Tutup'),
                   onPressed: () {
-                    _queryLives.doc(_group.code)
+                    _queryLives
+                        .doc(_group.code)
                         .collection(kBroadcasts)
                         .doc(id)
                         .collection(kReads)
-                        .doc(_userId).get().then((value){
-                          if (!value.exists){
-                            _queryLives.doc(_group.code)
-                                .collection(kBroadcasts)
-                                .doc(id)
-                                .collection(kReads)
-                                .doc(_userId).set(
-                                  {'read': DateTime.now().millisecondsSinceEpoch}
-                                );
-                          }
+                        .doc(_userId)
+                        .get()
+                        .then((value) {
+                      if (!value.exists) {
+                        _queryLives
+                            .doc(_group.code)
+                            .collection(kBroadcasts)
+                            .doc(id)
+                            .collection(kReads)
+                            .doc(_userId)
+                            .set({
+                          'read': DateTime.now().millisecondsSinceEpoch
+                        });
+                      }
                     });
 
                     Navigator.pop(context);
@@ -1062,20 +1152,23 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                 zoomGesturesEnabled: true,
                 scrollGesturesEnabled: true,
                 initialCameraPosition: CameraPosition(
-                  target: _selectedUser != null ?
-                  LatLng(_selectedUser.latitude, _selectedUser.longitude) :
-                  LatLng(0.0, 0.0),
+                  target: _selectedUser != null
+                      ? LatLng(_selectedUser.latitude, _selectedUser.longitude)
+                      : LatLng(0.0, 0.0),
                   zoom: 15,
                 ),
                 markers: _markers.values.toSet(),
                 //polylines: _polylines,
                 gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-                  Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer(),
+                  Factory<OneSequenceGestureRecognizer>(
+                    () => EagerGestureRecognizer(),
                   ),
                 },
               ),
             ),
-            SizedBox(height: 12,),
+            SizedBox(
+              height: 12,
+            ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
@@ -1095,7 +1188,9 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                             fontSize: 16.0,
                           ),
                         ),
-                        SizedBox(height: 5.0,),
+                        SizedBox(
+                          height: 5.0,
+                        ),
                         Text(
                           'Jarak dengan Anda',
                           textAlign: TextAlign.left,
@@ -1104,7 +1199,9 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                             fontSize: 16.0,
                           ),
                         ),
-                        SizedBox(height: 5.0,),
+                        SizedBox(
+                          height: 5.0,
+                        ),
                         Text(
                           'Jarak ke Tujuan',
                           textAlign: TextAlign.left,
@@ -1113,7 +1210,9 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                             fontSize: 16.0,
                           ),
                         ),
-                        SizedBox(height: 5.0,),
+                        SizedBox(
+                          height: 5.0,
+                        ),
                         Text(
                           'Kecepatan',
                           textAlign: TextAlign.left,
@@ -1122,19 +1221,27 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                             fontSize: 16.0,
                           ),
                         ),
-                        SizedBox(height: 5.0,),
+                        SizedBox(
+                          height: 5.0,
+                        ),
                       ],
                     ),
                   ),
-                  SizedBox(width: 10.0,),
-                  SizedBox(width: 10.0,),
+                  SizedBox(
+                    width: 10.0,
+                  ),
+                  SizedBox(
+                    width: 10.0,
+                  ),
                   Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _selectedMember != null ? '${_selectedMember.name}' : '',
+                          _selectedMember != null
+                              ? '${_selectedMember.name}'
+                              : '',
                           textAlign: TextAlign.left,
                           style: TextStyle(
                             color: Colors.black87,
@@ -1142,37 +1249,48 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 5.0,),
+                        SizedBox(
+                          height: 5.0,
+                        ),
                         Text(
-                          _selectedMember != null ?
-                          '${_selectedMember.distanceMember.toStringAsFixed(2)} meter' : '',
+                          _selectedMember != null
+                              ? '${_selectedMember.distanceMember.toStringAsFixed(2)} meter'
+                              : '',
                           textAlign: TextAlign.left,
                           style: TextStyle(
                             color: Colors.black87,
                             fontSize: 16.0,
                           ),
                         ),
-                        SizedBox(height: 5.0,),
+                        SizedBox(
+                          height: 5.0,
+                        ),
                         Text(
-                          _selectedMember != null ?
-                          '${_selectedMember.distanceDestination.toStringAsFixed(2)} meter' : '',
+                          _selectedMember != null
+                              ? '${_selectedMember.distanceDestination.toStringAsFixed(2)} meter'
+                              : '',
                           textAlign: TextAlign.left,
                           style: TextStyle(
                             color: Colors.black87,
                             fontSize: 16.0,
                           ),
                         ),
-                        SizedBox(height: 5.0,),
+                        SizedBox(
+                          height: 5.0,
+                        ),
                         Text(
-                          _selectedMember != null ?
-                          '${_selectedMember.speed.toStringAsFixed(0)} KMPJ' : '',
+                          _selectedMember != null
+                              ? '${_selectedMember.speed.toStringAsFixed(0)} KMPJ'
+                              : '',
                           textAlign: TextAlign.left,
                           style: TextStyle(
                             color: Colors.black87,
                             fontSize: 16.0,
                           ),
                         ),
-                        SizedBox(height: 5.0,),
+                        SizedBox(
+                          height: 5.0,
+                        ),
                       ],
                     ),
                   ),
@@ -1189,8 +1307,7 @@ class LiveGroupPageState extends State<LiveGroupPage> {
       _map,
     ];
 
-    Widget _liveGroupPage =
-    Scaffold(
+    Widget _liveGroupPage = Scaffold(
       body: LayoutUI(
         screen: ScreenVO(
           template: Templates.home,

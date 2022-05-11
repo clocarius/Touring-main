@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -28,6 +27,7 @@ import 'package:path_provider/path_provider.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key}) : super(key: key);
+
   @override
   HomePageState createState() => HomePageState();
 }
@@ -47,18 +47,20 @@ class HomePageState extends State<HomePage> {
   bool _isLoggedIn = false;
   int _listMode = 0;
 
-
   final UserConfig _userCfg = UserConfig();
   CollectionReference _queryUser;
   CollectionReference _queryGroup;
 
+// fungsi initstate dijalankan pertama kali lalu halaman akan ditampilkan
   @override
   void initState() {
     super.initState();
-    _queryUser = FirebaseFirestore.instance.collection('users');
-    _queryGroup = FirebaseFirestore.instance.collection('groups');
-    _initMenu();
-    _getUser();
+    _queryUser = FirebaseFirestore.instance
+        .collection('users'); // mengarahkan firebase ke tabel user
+    _queryGroup = FirebaseFirestore.instance
+        .collection('groups'); // mengarahkan firebase ke tabel grup
+    _initMenu(); // untuk menampilkan menu grup dan buat grup
+    _getUser(); // untuk mendapatkan data user dan data grup
   }
 
   @override
@@ -100,22 +102,23 @@ class HomePageState extends State<HomePage> {
     ];
     menu.icon = Icons.group_work;
     _menuIndexes.add(menu);
-
   }
-
+// fungsi untuk menampilkan grup yang telah diikuti
   void _getListGroup() async {
-    if (_userId.isNotEmpty){
+    if (_userId.isNotEmpty) {
       _groupIndexes.clear();
-      _queryUser.doc(_userId).collection(kGroups)
+      _queryUser
+          .doc(_userId)
+          .collection(kGroups)
           .snapshots()
           .listen((_snapshotUser) {
         _groupIndexes.clear();
 
-        if (_snapshotUser.docs.isNotEmpty){
+        if (_snapshotUser.docs.isNotEmpty) {
           _listMode = 1;
         }
 
-        for (var i = 0; i < _snapshotUser.docs.length; i++){
+        for (var i = 0; i < _snapshotUser.docs.length; i++) {
           var element = _snapshotUser.docs[i];
           var tmpGroup = GroupVO.fromJson(element.data());
 
@@ -135,11 +138,11 @@ class HomePageState extends State<HomePage> {
       });
     }
   }
-
+// fungsi untuk mendapatkan data nama, user id dan list grup
   void _getUser() async {
     var _userCfg = UserConfig();
     _userLogin = await _userCfg.getUser();
-    if (_userLogin != null){
+    if (_userLogin != null) {
       setState(() {
         _userName = _userLogin.name;
         _userId = _userLogin.uid;
@@ -149,11 +152,12 @@ class HomePageState extends State<HomePage> {
     }
   }
 
-  void _initAction(){
+  void _initAction() {
     _actionList.clear();
     _actionList = [
       IconButton(
-        icon: Icon(Icons.logout,
+        icon: Icon(
+          Icons.logout,
           color: kColorsGrey800,
         ),
         tooltip: 'Keluar',
@@ -481,35 +485,37 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  void _menuClick(int index){
-    switch(index){
+  void _menuClick(int index) {
+    switch (index) {
+      // fungsi menu buat grup
       case 0:
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => CreateGroupPage(),
           ),
-        ).then((value){
+        ).then((value) {
           _refreshList(value);
         });
 
         break;
-      case 1:
 
+      // fungsi menu join grup
+      case 1:
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => JoinGroupPage(),
           ),
-        ).then((value){
+        ).then((value) {
           _refreshList(value);
         });
 
         break;
     }
   }
-
-  void _groupClick(int index){
+//fungsi jika grup di klik
+  void _groupClick(int index) {
     var group = _groupIndexes[index];
 
     Navigator.push(
@@ -519,30 +525,27 @@ class HomePageState extends State<HomePage> {
           group: group,
         ),
       ),
-    ).then((value){
+    ).then((value) {
       //_refreshList(value);
     });
-
   }
-
+// fungsi logout
   void _logout() {
-    googleSignIn.isSignedIn().then((value){
-      googleSignIn.signOut().then((value){
-        firebaseAuth.signOut().then((value){
-          _userCfg.clearUser();
-          Navigator.of(context).pop();
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => LoginPage(),
-            ),
-          );
-        });
+    googleSignIn.signOut().then((value) {
+      firebaseAuth.signOut().then((value) {
+        _userCfg.clearUser();
+        Navigator.of(context).pop();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => LoginPage(),
+          ),
+        );
       });
     });
   }
 
-  void _refreshList(bool reload){
+  void _refreshList(bool reload) {
     /*
     if (reload != null){
       if (reload){
@@ -557,7 +560,7 @@ class HomePageState extends State<HomePage> {
   void showAlertDialog(BuildContext context) {
     Widget cancelButton = MaterialButton(
       child: Text("Tutup"),
-      onPressed:  () {
+      onPressed: () {
         Navigator.pop(context);
       },
     );
@@ -568,7 +571,7 @@ class HomePageState extends State<HomePage> {
       actions: [
         cancelButton,
       ],
-    );  // show the dialog
+    ); // show the dialog
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -580,7 +583,7 @@ class HomePageState extends State<HomePage> {
   void _alert(BuildContext context, String title, String text) {
     Widget cancelButton = MaterialButton(
       child: Text("Tutup"),
-      onPressed:  () {
+      onPressed: () {
         Navigator.pop(context);
       },
     );
@@ -591,7 +594,7 @@ class HomePageState extends State<HomePage> {
       actions: [
         cancelButton,
       ],
-    );  // show the dialog
+    ); // show the dialog
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -602,8 +605,10 @@ class HomePageState extends State<HomePage> {
 
   String generateRandomString(int len) {
     var r = Random();
-    const _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
-    return List.generate(len, (index) => _chars[r.nextInt(_chars.length)]).join();
+    const _chars =
+        'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+    return List.generate(len, (index) => _chars[r.nextInt(_chars.length)])
+        .join();
   }
 
   Future<File> createFileOfPdfUrl(url) async {
@@ -688,7 +693,9 @@ class HomePageState extends State<HomePage> {
     Widget _header = SliverToBoxAdapter(
       child: Center(
         child: Container(
-          padding: EdgeInsets.all(0.0,),
+          padding: EdgeInsets.all(
+            0.0,
+          ),
           color: kColorPrimary,
           child: cover,
         ),
@@ -699,7 +706,9 @@ class HomePageState extends State<HomePage> {
       child: Center(
         child: Container(
           alignment: Alignment.center,
-          margin: EdgeInsets.only(top: 5.0,),
+          margin: EdgeInsets.only(
+            top: 5.0,
+          ),
           width: 44.0,
           height: 44.0,
           decoration: BoxDecoration(
@@ -716,7 +725,7 @@ class HomePageState extends State<HomePage> {
             height: 30.0,
             child: CircularProgressIndicator(
               strokeWidth: 4.0,
-              valueColor : AlwaysStoppedAnimation(kColorPrimary),
+              valueColor: AlwaysStoppedAnimation(kColorPrimary),
             ),
           ),
         ),
@@ -726,7 +735,9 @@ class HomePageState extends State<HomePage> {
     Widget _title = SliverToBoxAdapter(
       child: Center(
         child: Container(
-          margin: EdgeInsets.only(top: 20.0,),
+          margin: EdgeInsets.only(
+            top: 20.0,
+          ),
           padding: EdgeInsets.only(
             left: 16.0,
             right: 16.0,
@@ -784,7 +795,9 @@ class HomePageState extends State<HomePage> {
     Widget _listGroup = SliverToBoxAdapter(
       child: Center(
         child: Container(
-          padding: EdgeInsets.all(10.0,),
+          padding: EdgeInsets.all(
+            10.0,
+          ),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.all(Radius.circular(20.0)),
@@ -799,7 +812,8 @@ class HomePageState extends State<HomePage> {
       ),
     );
 
-    if (_listMode == 1){
+    // menampilkan list grup
+    if (_listMode == 1) {
       _listGroup = SliverGrid(
         gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
           mainAxisExtent: 140.0,
@@ -809,8 +823,7 @@ class HomePageState extends State<HomePage> {
           childAspectRatio: 1.0,
         ),
         delegate: SliverChildBuilderDelegate(
-              (BuildContext context, int index)
-          {
+          (BuildContext context, int index) {
             return _itemGroup(index);
           },
           childCount: _groupIndexes.length,
@@ -827,8 +840,7 @@ class HomePageState extends State<HomePage> {
         childAspectRatio: 1.0,
       ),
       delegate: SliverChildBuilderDelegate(
-            (BuildContext context, int index)
-        {
+        (BuildContext context, int index) {
           return _itemMenu(index);
         },
         childCount: _menuIndexes.length,

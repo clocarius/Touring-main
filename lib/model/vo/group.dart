@@ -22,7 +22,7 @@ class GroupVO {
     this.latitude,
     this.longitude,
   });
-
+// data grup
   factory GroupVO.fromJson(Map<String, dynamic> json) {
     return GroupVO(
       code: json.containsKey('code') ? json['code'].toString() : '',

@@ -29,7 +29,7 @@ class ListGroupPageState extends State<ListGroupPage> {
   final List<GroupVO> _groupIndexes = [];
 
   bool _isRefresh = false;
-
+// mengambil data grup dari firebase
   @override
   void initState() {
     super.initState();

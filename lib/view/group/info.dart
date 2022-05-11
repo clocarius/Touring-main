@@ -65,7 +65,7 @@ class InfoGroupPageState extends State<InfoGroupPage> {
   void dispose() {
     super.dispose();
   }
-
+// mendapatkan informasi user
   void _getUser() async {
     var _userCfg = UserConfig();
     _userLogin = await _userCfg.getUser();
@@ -75,7 +75,7 @@ class InfoGroupPageState extends State<InfoGroupPage> {
       }
     });
   }
-
+// mendapatkan informasi grup
   void _getGroupInfo(){
     _group = widget.group;
     _queryGroup.doc(_group.code).snapshots().listen((value) {

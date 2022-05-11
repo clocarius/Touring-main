@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:touring/constant/color.dart';
@@ -14,6 +13,7 @@ import 'package:flutter_svg/svg.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key key}) : super(key: key);
+
   @override
   LoginPageState createState() => LoginPageState();
 }
@@ -38,21 +38,27 @@ class LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+// fungsi jika di klik tombol login
   void _handleSignIn() async {
     setState(() {
       _isLoading = true;
     });
 
+// fungsi untuk mengambil data login email
     var googleUser = await googleSignIn.signIn();
     var googleAuth = await googleUser.authentication;
 
+// fungsi untuk mengecek credential login
     final AuthCredential credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
 
-    var firebaseUser = (await firebaseAuth.signInWithCredential(credential)).user;
+    // menyimpan data login email ke dalam firebase user
+    var firebaseUser =
+        (await firebaseAuth.signInWithCredential(credential)).user;
 
+    // menyimpan data login dari firebase user ke dalam objek
     if (firebaseUser != null) {
       var _configVO = UserConfig();
       var _user = UserVO();
@@ -62,13 +68,14 @@ class LoginPageState extends State<LoginPage> {
       _user.image = firebaseUser.photoURL;
       _user.tid = await firebaseMessaging.getToken();
 
+      // untuk cek apakah user sudah terdaftar atau belum
       var _snapshotUser = await _queryUser.doc(_user.uid).get();
 
       UserVO _result;
 
-      if (_snapshotUser.exists){
+      if (_snapshotUser.exists) {
         _result = UserVO.fromJson(_snapshotUser.data());
-        if (_result.tid != _user.tid){
+        if (_result.tid != _user.tid) {
           await _queryUser.doc(_user.uid).set(_user.toJson());
           _result.tid = _user.tid;
         }
@@ -77,7 +84,7 @@ class LoginPageState extends State<LoginPage> {
         _result = _user;
       }
 
-      if (_result != null){
+      if (_result != null) {
         _configVO.setUser(_result);
       }
 
@@ -103,7 +110,9 @@ class LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     Widget _loading = Container(
       alignment: Alignment.center,
-      margin: EdgeInsets.only(top: 5.0,),
+      margin: EdgeInsets.only(
+        top: 5.0,
+      ),
       width: 44.0,
       height: 44.0,
       decoration: BoxDecoration(
@@ -121,7 +130,7 @@ class LoginPageState extends State<LoginPage> {
           height: 30.0,
           child: CircularProgressIndicator(
             strokeWidth: 4.0,
-            valueColor : AlwaysStoppedAnimation(kColorPrimary),
+            valueColor: AlwaysStoppedAnimation(kColorPrimary),
           ),
         ),
       ),
@@ -131,7 +140,11 @@ class LoginPageState extends State<LoginPage> {
       color: Color.fromRGBO(0, 0, 0, 255),
       child: MaterialButton(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(5.0,),),
+          borderRadius: BorderRadius.all(
+            Radius.circular(
+              5.0,
+            ),
+          ),
         ),
         color: kColorsGreen,
         onPressed: _handleSignIn,
@@ -139,11 +152,15 @@ class LoginPageState extends State<LoginPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Icon(Icons.account_circle,
+              Icon(
+                Icons.account_circle,
                 color: Colors.black45,
               ),
-              SizedBox(width: 12,),
-              Text('Masuk',
+              SizedBox(
+                width: 12,
+              ),
+              Text(
+                'Masuk',
                 style: TextStyle(
                   fontSize: 18.0,
                   color: Colors.black45,
@@ -174,11 +191,16 @@ class LoginPageState extends State<LoginPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Container(
-              margin: EdgeInsets.only(bottom: 20,),
+              margin: EdgeInsets.only(
+                bottom: 20,
+              ),
               child: cover,
             ),
-            SizedBox(height: 10.0,),
-            Text(kAppWelcome,
+            SizedBox(
+              height: 10.0,
+            ),
+            Text(
+              kAppWelcome,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: kColorsIndigo800,
@@ -186,21 +208,29 @@ class LoginPageState extends State<LoginPage> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 5.0,),
-            Text(kAppDescription,
+            SizedBox(
+              height: 5.0,
+            ),
+            Text(
+              kAppDescription,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: kColorsBlueGrey800,
                 fontSize: 16.0,
               ),
             ),
-            SizedBox(height: 20.0,),
+            SizedBox(
+              height: 20.0,
+            ),
             Divider(
               color: kColorsGreen800,
               height: 1.0,
             ),
-            SizedBox(height: 5.0,),
-            Text(kLoginInstruction,
+            SizedBox(
+              height: 5.0,
+            ),
+            Text(
+              kLoginInstruction,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: kColorsBlueGrey800,

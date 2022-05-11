@@ -107,6 +107,7 @@ class JoinGroupPageState extends State<JoinGroupPage> {
       _queryGroup.doc(code).collection('members')
           .doc(_userId).get().then((value) {
         if (!value.exists){
+          //menghitung jarak member dengan tujuan
           var distanceDest = Geolocator.distanceBetween(
               _resultGroup.latitude, _resultGroup.longitude,
               _currLatLng.latitude, _currLatLng.longitude);
@@ -118,7 +119,7 @@ class JoinGroupPageState extends State<JoinGroupPage> {
             distanceMember: 0.0,
             distanceDestination: distanceDest,
           );
-
+// menyimpan data kedalam firebase
           _queryGroup.doc(code).collection('members').doc(_userId).set(member.toJson()).then((value){
             _queryUser.doc(_userId).collection('groups').doc(code).set({'code': code}).then((value){
               setState(() {
