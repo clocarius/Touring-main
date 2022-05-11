@@ -209,7 +209,7 @@ class LiveGroupPageState extends State<LiveGroupPage> {
   void _listenPosition() {
     final positionStream = _geolocatorPlatform.getPositionStream(
       locationSettings: AndroidSettings(
-        intervalDuration: Duration(seconds: kTimeInterval),
+        intervalDuration: Duration(seconds: 5),
         accuracy: LocationAccuracy.high,
       ),
     );
@@ -616,7 +616,13 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                     _markers[MarkerId(currId)] = headerMarker;
                   }
 
-                  if ((currSpeed / 1000).ceil() > 0) {
+                  
+                });
+              }
+            });
+
+            setState(() {
+              if ((currSpeed / 1000).ceil() > 0) {
                     //state kepala rombongan
                     if (headerId == _userId) {
                       if (currRangeBack > safeSpeed) {
@@ -702,8 +708,6 @@ class LiveGroupPageState extends State<LiveGroupPage> {
                       }
                     }
                   }
-                });
-              }
             });
           }
         }
